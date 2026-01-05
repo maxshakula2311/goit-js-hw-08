@@ -1,4 +1,3 @@
-// import * as basicLightbox from "basiclightbox";
 
 const images = [
   {
@@ -66,51 +65,37 @@ const images = [
   },
 ];
 
-for (const obj of images) {
-  const { preview, original, description } = obj;
-  const galleryItem = document.createElement("li");
-  galleryItem.classList.add("gallery-item");
-  galleryItem.innerHTML = `
-  <a class="gallery-link" href="${original}">
-    <img
-      class="gallery-image"
-      src="${preview}"
-      data-source="${original}"
-      alt="${description}"
-    />
-  </a>
-`;
-  document.querySelector(".gallery").appendChild(galleryItem);
-}
+const galleryEl = document.querySelector('.gallery');
+const markup = images
+  .map(({ preview, original, description }) => `
+  \n
+  <li class="gallery-item">\n
+      <a class="gallery-link" href="${original}">\n
+          <img class="gallery-image" src="${preview}" data-source="${original}" alt="${description}"/>\n
+      </a>\n
+  </li>`)
+  .join('');
 
-  // dynamic loader for basicLightbox (only loads if not already present)
-  function loadBasicLightbox() {
-    if (window.basicLightbox) return Promise.resolve(window.basicLightbox);
-    return new Promise((resolve, reject) => {
-      const s = document.createElement('script');
-      s.src = 'https://cdn.jsdelivr.net/npm/basiclightbox@5.0.4/dist/basicLightbox.min.js';
-      s.async = true;
-      s.onload = () => resolve(window.basicLightbox);
-      s.onerror = () => reject(new Error('Failed to load basicLightbox'));
-      document.head.appendChild(s);
-    });
-  }
+galleryEl.innerHTML = markup;
 
-  const gallery = document.querySelector('.gallery');
-  gallery.addEventListener('click', (el) => {
-    const link = el.target.closest('a.gallery-link');
-    el.preventDefault();
-    const src = link.href;
+const gallery = document.querySelector('.gallery');
+gallery.addEventListener('click', (event) => {
+  const clicked = event.target;
+  if (!clicked || clicked.tagName !== 'IMG') return;
 
-    const instance = basicLightbox.create(
-      `<img src="${src}" class="modal-img">`,
-      {
-        onShow: (instance) => {
-          const instEl = instance.element();
-          instEl.addEventListener('contextmenu', (modal) => modal.preventDefault());
-        }
-      }
-    );
+  event.preventDefault();
+  const src = clicked.dataset.source;
+  if (!src) return;
 
-    instance.show();
-  });
+  const instance = basicLightbox.create(
+    `<img src="${src}" class="modal-img">`,
+    {
+      onShow: (instance) => {
+        const instEl = instance.element();
+        instEl.addEventListener('contextmenu', (modal) => modal.preventDefault());
+      },
+    }
+  );
+
+  instance.show();
+});
